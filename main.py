@@ -1,5 +1,6 @@
 
-from app.my_app import MyApp
+from app.sim_app import SimApp
 
-app = MyApp()
+app = SimApp()
 app.MainLoop()
+

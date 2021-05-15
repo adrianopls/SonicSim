@@ -9,7 +9,7 @@ from classes.uim import UIManager
 from classes.om import ObjectManager
 
 
-class MyApp(wx.App):
+class SimApp(wx.App):
     
     # def __init__(self):
     #     #

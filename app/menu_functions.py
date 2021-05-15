@@ -20,6 +20,9 @@ Here there is an exemple of use. In the interface.py file we may have
 import os
 import wx
 
+from . import interface
+from classes.uim import UIManager
+
 
 def on_open(*args, **kwargs):
     wildcard = "Load segmentated file (*.png)|*.png"
@@ -47,3 +50,8 @@ def on_open(*args, **kwargs):
         raise
 
 
+
+def on_open_model(*args, **kwargs):
+    UIM = UIManager()      
+    mwc = wx.GetApp().get_main_window_controller()
+    UIM.create('crossplot_controller', mwc.uid)
