@@ -20,9 +20,9 @@ ICONS_PATH = BASE_PATH.joinpath(BASE_PATH, ICONS_REL_PATH)
 
 
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG) 
+#logger.setLevel(logging.DEBUG) 
 
-
+logger.setLevel(logging.INFO) 
 
 
 # def _read_app_definitions():

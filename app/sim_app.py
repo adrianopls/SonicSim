@@ -32,6 +32,28 @@ class SimApp(wx.App):
         self.load_app_interface()  
         return True           
  
+    """
+    When the MainWindow calls the function below, GripyApp will close UIManager 
+    but not finish the wx.App.
+    This job must be done by Wx. (don't try to change it!)
+    """
+    # TODO: VERIFICAR ISSO, POIS O PREEXIT EVITA QUE OBJETO DO UIM FIQUEM PRESOS
+    def PreExit(self):
+        msg = 'GriPy Application is preparing to terminate....'
+        logging.info(msg)
+        
+        OM = ObjectManager()
+        UIM = UIManager()
+        UIM.PreExit()
+        OM._reset()
+        
+
+    def OnExit(self):
+        msg = 'GriPy Application has finished.'
+        logging.info(msg)
+        return super().OnExit()    
+ 
+    
     def load_app_interface(self):
         # Load app Interface
         self._mwc = interface.load()
@@ -56,4 +78,7 @@ class SimApp(wx.App):
         )
             
             
-            
+
+        
+     
+        

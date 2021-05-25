@@ -5,10 +5,16 @@ from classes.om.manager import ObjectManager
 from .uim import UIManager
 #
 from .om.well import Well
+from .om.model_acoustic2d import Model2DAcoustic
+from .om.geo_layer import GeoLayer
+from .om.wavelet import Wavelet
+from .om.simulation import Simulation
 #
 from .uim import FrameController, Frame
 from .uim import DialogController, Dialog
 from .uim import TreeController, TreeView
+#
+
 #
 from .uim import MainWindowController, MainWindow
 from .uim import MenuBarController, MenuBarView
@@ -26,7 +32,15 @@ from .uim import PropertyGridController, PropertyGridView
 from .uim import CanvasPlotterController, CanvasPlotter                
 from .uim import TrackCanvasController, TrackCanvas   
 from .uim import TrackLabelController, TrackLabel
-                   
+#
+from .uim import \
+        ObjectPropertiesDialogController, ObjectPropertiesDialog                  
+#
+from .uim import ModelPlotController, ModelPlot
+from .uim import WaveletPlotController, WaveletPlot
+from .uim import SimulationPlotController, SimulationPlot
+#
+
 
 
 
@@ -45,7 +59,10 @@ def register_OM_classes():
 #     ObjectManager.register_class(DataIndex, CurveSet)
 #     ObjectManager.register_class(Log, CurveSet)
 #     #
-#     ObjectManager.register_class(Seismic)
+    ObjectManager.register_class(Model2DAcoustic)
+    ObjectManager.register_class(GeoLayer, Model2DAcoustic)
+    ObjectManager.register_class(Wavelet)
+    ObjectManager.register_class(Simulation)
 #     ObjectManager.register_class(DataIndex, Seismic)
 #     ObjectManager.register_class(DataIndexMap, Seismic)
 #     #
@@ -142,6 +159,16 @@ def register_UIManager_classes():
     UIManager.register_class(CrossPlotController, CrossPlot, MainWindowController)
     UIManager.register_class(CrossPlotController, CrossPlot, FrameController)
     # 
+    UIManager.register_class(ModelPlotController, ModelPlot, MainWindowController)    
+    UIManager.register_class(CanvasPlotterController, CanvasPlotter, ModelPlotController)     
+    #
+    UIManager.register_class(WaveletPlotController, WaveletPlot, MainWindowController)    
+    UIManager.register_class(CanvasPlotterController, CanvasPlotter, WaveletPlotController)     
+    #
+    UIManager.register_class(SimulationPlotController, SimulationPlot, MainWindowController)
+    UIManager.register_class(CanvasPlotterController, CanvasPlotter, SimulationPlotController)
+    #    
+    
 #    UIManager.register_class(ConsoleController, Console, MainWindowController)
 #    UIManager.register_class(ConsoleController, Console, FrameController)
     #    
@@ -195,11 +222,11 @@ def register_UIManager_classes():
     # UIManager.register_class(TrackCanvasController, TrackCanvas, TrackController)
     # UIManager.register_class(TrackLabelController, TrackLabel, TrackController)
     #
-    # UIManager.register_class(ObjectPropertiesDialogController, 
-    #                                              ObjectPropertiesDialog)
-    # UIManager.register_class(PropertyGridController,
-    #                          PropertyGridView, ObjectPropertiesDialogController
-    # )    
+    UIManager.register_class(ObjectPropertiesDialogController, 
+                                                 ObjectPropertiesDialog)
+    UIManager.register_class(PropertyGridController,
+                             PropertyGridView, ObjectPropertiesDialogController
+    )    
     # UIManager.register_class(PropertyGridController,
     #                          PropertyGridView, LPEWellPlotPanelController
     # ) 

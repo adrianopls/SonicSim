@@ -37,7 +37,8 @@ def load():
                      title="SonicSim 0.1b"
     )
     
-
+    # Tree Controller                                                          
+    UIM.create('tree_controller', mwc.uid)     
 
     # Menubar
     menubar_ctrl = UIM.create('menubar_controller', mwc.uid)
@@ -50,7 +51,7 @@ def load():
             label="&Load model", 
             help="Load a model from file",
             id=wx.ID_OPEN,
-            callback='app.menu_functions.on_open_model'
+            callback='app.menu_functions.on_load_model'
     )        
     UIM.create('menu_item_controller', mc_model.uid, 
             label="&Create model", 
@@ -76,19 +77,29 @@ def load():
             #callback='app.menu_functions.on_exit'
     )           
     
+      
+ 
+  
+    mc_wavelet = UIM.create('menu_controller', menubar_ctrl.uid, 
+                        label="Wavelet")      
+    UIM.create('menu_item_controller', mc_wavelet.uid, 
+            label="Create Wavelet", 
+            callback='app.menu_functions.on_create_wavelet'
+    )    
+
         
     mc_sim = UIM.create('menu_controller', menubar_ctrl.uid, 
                             label="Simulation type")                          
     UIM.create('menu_item_controller', mc_sim.uid, 
-            label="Staggered grid"
-            #callback='app.menu_functions.on_open'
+            label="Staggered grid",
+            callback='app.menu_functions.on_create_simulation'
     )             
     UIM.create('menu_item_controller', mc_sim.uid, 
             label="Rotated Staggered grid",
             enabled=False
             #callback='app.menu_functions.on_open'
-    )              
- 
+    )        
+
     
     mc_about = UIM.create('menu_controller', menubar_ctrl.uid, 
                     label="About")    
