@@ -1,0 +1,52 @@
+
+import wx
+from classes.uim import UIManager
+
+UIM = UIManager()
+mwc = wx.App.Get().get_main_window_controller()
+
+
+wc = UIM.create('workpage_controller', mwc.uid)
+
+
+wc.float_mode = True
+
+wc.float_mode = False
+
+
+
+print(wc.view)
+wc.view.Refresh()
+
+
+wc = cc
+
+frame_uid = UIM._getparentuid(wc.uid)
+print(frame_uid)
+
+
+frame = UIM.get(frame_uid)
+
+frame.view.Refresh()
+
+fc = UIM.create('frame_controller', mwc.uid)
+
+p = wx.Panel(fc.view)
+p.SetBackgroundColour('green')
+
+fc.view.Show()
+
+print(wc.view.IsShown())
+
+
+wc.view.Show()
+
+
+cc = UIM.get(("console_controller", 1))
+
+
+cc.float_mode = True
+
+
+
+print("AAA")
