@@ -1,9 +1,8 @@
-[submodule "classes/om"]
-	path = classes/om
-	url = https://github.com/adrianopls/ObjectManager.git
 [submodule "classes/uim"]
 	path = classes/uim
 	url = https://github.com/adrianopls/UIManager.git
 [submodule "classes/gm"]
 	path = classes/gm
 	url = https://github.com/adrianopls/GenericManager.git
+[submodule "classes/om"]
+	url = https://github.com/adrianopls/ObjectManager.git
