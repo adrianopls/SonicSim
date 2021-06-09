@@ -36,6 +36,13 @@ WAVELET_TYPES['Ricker'] = 'ricker'
 
 
 
+def on_console(*args, **kwargs):
+    
+    UIM = UIManager()
+    mwc = wx.App.Get().get_main_window_controller()
+    UIM.create('console_controller', mwc.uid)
+
+
 def on_load_model(*args, **kwargs):
     wildcard = "Load segmentated file (*.png, *.tif)|*.png;*.tif"
 

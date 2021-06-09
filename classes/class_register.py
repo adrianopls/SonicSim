@@ -41,7 +41,7 @@ from .uim import WaveletPlotController, WaveletPlot
 from .uim import SimulationPlotController, SimulationPlot
 #
 
-
+from .uim import ConsoleController, Console
 
 
 def register_app_classes():
@@ -159,6 +159,7 @@ def register_UIManager_classes():
     UIManager.register_class(CrossPlotController, CrossPlot, MainWindowController)
     UIManager.register_class(CrossPlotController, CrossPlot, FrameController)
     # 
+    UIManager.register_class(ModelPlotController, ModelPlot, FrameController)
     UIManager.register_class(ModelPlotController, ModelPlot, MainWindowController)    
     UIManager.register_class(CanvasPlotterController, CanvasPlotter, ModelPlotController)     
     #
@@ -169,9 +170,10 @@ def register_UIManager_classes():
     UIManager.register_class(CanvasPlotterController, CanvasPlotter, SimulationPlotController)
     #    
     
-#    UIManager.register_class(ConsoleController, Console, MainWindowController)
-#    UIManager.register_class(ConsoleController, Console, FrameController)
-    #    
+    # 
+    UIManager.register_class(ConsoleController, Console, MainWindowController)
+    UIManager.register_class(ConsoleController, Console, FrameController)
+    #
 #    UIManager.register_class(TrackController, TrackView, WellPlotController)
     # UIManager.register_class(TrackObjectController, None,
     #                           TrackController

@@ -105,6 +105,10 @@ def load():
                     label="About")    
         
  
+    UIM.create('menu_item_controller', mc_about.uid, 
+            label="Console",
+            callback='app.menu_functions.on_console'
+    )   
 
 
 
