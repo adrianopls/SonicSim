@@ -111,7 +111,10 @@ def load():
     )   
 
 
-
+    UIM.create('menu_item_controller', mc_about.uid, 
+            label="Teste",
+            callback='app.menu_functions.on_create_teste'
+    )   
 
 
     

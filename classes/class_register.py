@@ -40,8 +40,16 @@ from .uim import ModelPlotController, ModelPlot
 from .uim import WaveletPlotController, WaveletPlot
 from .uim import SimulationPlotController, SimulationPlot
 #
+from .uim import TestePlotController, TestePlot
+#
 
 from .uim import ConsoleController, Console
+
+
+#### Modo teste                                     
+from .uim  import CanvasPlotterControllerJun21, CanvasPlotterJun21   
+#### MOdo teste - fim
+
 
 
 def register_app_classes():
@@ -169,7 +177,8 @@ def register_UIManager_classes():
     UIManager.register_class(SimulationPlotController, SimulationPlot, MainWindowController)
     UIManager.register_class(CanvasPlotterController, CanvasPlotter, SimulationPlotController)
     #    
-    
+    UIManager.register_class(TestePlotController, TestePlot, MainWindowController)
+    UIManager.register_class(CanvasPlotterControllerJun21, CanvasPlotterJun21, TestePlotController)    
     # 
     UIManager.register_class(ConsoleController, Console, MainWindowController)
     UIManager.register_class(ConsoleController, Console, FrameController)

@@ -453,3 +453,21 @@ def on_create_simulation(*args, **kwargs):
         del wait
         del disableAll
         UIM.remove(dlg.uid)            
+        
+        
+        
+def on_create_teste(*args, **kwargs):
+    OM = ObjectManager()
+    UIM = UIManager()
+    #        
+    mwc = wx.GetApp().get_main_window_controller()
+    tc = UIM.create('testeplot_controller', mwc.uid)      
+                
+                
+                
+                
+                
+                
+                
+                
+                
