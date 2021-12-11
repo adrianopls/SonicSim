@@ -21,9 +21,10 @@ class Grain:
 
     """
 
-    def __init__(self, grain_id, origin, lattice='hex'):
+    def __init__(self, grain_id, origin_coord, lattice='hex'):
+        print("Creating Grain " + str(grain_id) + " with origin_coord " + str(origin_coord))
         self.grain_id = grain_id
-        self.origin = origin
+        self.origin_coord = origin_coord
         self.lattice = lattice
         # Initialize the displacements for other atoms around a reference atom,
         # and the maximum rotation angle, phi, to obtain all orientations.
@@ -54,10 +55,12 @@ class Grain:
         self.rot = _make_rot_matrix(theta)
         self.lattice_disp = (self.rot @ self.lattice_disp).T
         patch_rot = _make_rot_matrix(self.phi/2)
+        
         if self.lattice == 'hex':
             a = 1 / np.sqrt(3)
         else:
             a = 1 / np.sqrt(2)
+        
         self.patch_disp = a * (patch_rot @ self.lattice_disp.T).T
 
 
@@ -134,34 +137,107 @@ class Crystal:
         self.atom_diameter = atom_diameter
         self.atoms, self.grains = [], []
 
-    def seed_grains(self):
-        """Place the ngrain seeds randomly, a minimum distane apart."""
 
+    def seed_grains(self):
+        
+        """De acordo com o critério de validação de distancia minima entre os 
+        seeds (Origens) dos Grains, obtém o ponto de origem de cada um dos 
+        Grains e os instancia."""
+        
+        """Esta funcão foi ajustada em 11/12/2021 para quando só existir 
+        1 Grain aceitar diretamente o seed sugerido pelo ramdomize. Neste caso,
+        não há necessidade do uso de seed_minimum_distance como critério de 
+        validação.
+        """
+        
+        
         # Reset the crystal.
         self.atoms, self.grains = [], []
         self.sim_cells = SimCells(self.atom_diameter)
 
-        for i in range(self.ngrains):
-            while True:
-                site = np.random.random((2,))
-                for atom in self.atoms:
-                    if distance(site,atom.coords) < self.seed_minimum_distance:
-                        # Seed atom too close to another: go back and try again
+        if self.ngrains == 1:
+            grain_origin_atom_coord = np.random.random((2,))
+            print("VEIO PRA CÁ")
+            # Initialise a grain and add its seed atom.
+            grain = Grain(0, grain_origin_atom_coord, self.lattice)
+            self.grains.append(grain)
+            atom = Atom(grain, grain_origin_atom_coord)
+            self.atoms.append(atom)
+            self.sim_cells.add_atom_to_cell(atom)            
+
+        else:
+            for i in range(self.ngrains):
+                print("\n\ni: ", i, len(self.atoms))
+                while True:
+                    grain_origin_atom_coord = np.random.random((2,))
+                    for atom in self.atoms:
+    
+                        if distance(grain_origin_atom_coord, atom.coords) < self.seed_minimum_distance:
+                            print(grain_origin_atom_coord, atom.coords, 
+                                  distance(grain_origin_atom_coord, atom.coords), 
+                                  self.seed_minimum_distance, len(self.atoms), "ACEITOU ATOM!\n")
+                            # Seed atom too close to another: go back and try again
+                            break
+                        print(grain_origin_atom_coord, atom.coords, 
+                              distance(grain_origin_atom_coord, atom.coords), 
+                              self.seed_minimum_distance, len(self.atoms), "NÃO ACEITOU ATOM!")
+                    else:
+                        print("VEIO PRA CÁ")
+                        # Initialise a grain and add its seed atom.
+                        grain = Grain(i, grain_origin_atom_coord, self.lattice)
+                        self.grains.append(grain)
+                        atom = Atom(grain, grain_origin_atom_coord)
+                        self.atoms.append(atom)
+                        self.sim_cells.add_atom_to_cell(atom)
                         break
-                else:
-                    # Initialise a grain and add its seed atom.
-                    grain = Grain(i, site, self.lattice)
-                    self.grains.append(grain)
-                    atom = Atom(grain, site)
-                    self.atoms.append(atom)
-                    self.sim_cells.add_atom_to_cell(atom)
-                    break
+
+
+    # def seed_grains(self):
+    #     """Place the ngrain seeds randomly, a minimum distance apart."""
+        
+    #     """De acordo com o critério de validação de distancia minima entre os 
+    #     seeds (Origens) dos Grains, obtém o ponto de origem de cada um dos 
+    #     Grains e os instancia."""
+        
+    #     # Reset the crystal.
+    #     self.atoms, self.grains = [], []
+    #     self.sim_cells = SimCells(self.atom_diameter)
+
+    #     for i in range(self.ngrains):
+    #         print("\n\ni: ", i, len(self.atoms))
+    #         while True:
+    #             grain_origin_atom_coord = np.random.random((2,))
+    #             for atom in self.atoms:
+
+    #                 if distance(grain_origin_atom_coord, atom.coords) < self.seed_minimum_distance:
+    #                     print(grain_origin_atom_coord, atom.coords, 
+    #                           distance(grain_origin_atom_coord, atom.coords), 
+    #                           self.seed_minimum_distance, len(self.atoms), "ACEITOU ATOM!\n")
+    #                     # Seed atom too close to another: go back and try again
+    #                     break
+    #                 print(grain_origin_atom_coord, atom.coords, 
+    #                       distance(grain_origin_atom_coord, atom.coords), 
+    #                       self.seed_minimum_distance, len(self.atoms), "NÃO ACEITOU ATOM!")
+    #             else:
+    #                 print("VEIO PRA CÁ")
+    #                 # Initialise a grain and add its seed atom.
+    #                 grain = Grain(i, grain_origin_atom_coord, self.lattice)
+    #                 self.grains.append(grain)
+    #                 atom = Atom(grain, grain_origin_atom_coord)
+    #                 self.atoms.append(atom)
+    #                 self.sim_cells.add_atom_to_cell(atom)
+    #                 break
+
 
     def grow_crystal(self):
         """Grow a new polycrystal."""
-
+        print()
+        print(len(self.atoms), 'atoms placed - grow_crystal started.')
         self.seed_grains()
-
+        print()
+        print(len(self.atoms), 'atoms placed - grow_crystal middled.')
+        print()
+        
         # i_active is a list of the indices of atoms whcih have space next
         # to them to place a new atom.
         i_active = list(range(self.ngrains))
@@ -181,7 +257,7 @@ class Crystal:
             self.sim_cells.add_atom_to_cell(atom)
             i_active.append(n)
 
-        print(len(self.atoms), 'atoms placed')
+        print(len(self.atoms), 'atoms placed - grow_crystal ended.')
 
     def get_neighbour_candidate_sites(self, atom):
         """Return candidate locations next to atom to place a new atom.
@@ -267,11 +343,11 @@ class Crystal:
         plt.savefig(filename)
         plt.show()
 
-crystal = Crystal(ngrains=4, seed_minimum_distance=0.2, lattice='square',
-                 atom_diameter=0.01)
+crystal = Crystal(ngrains=1, seed_minimum_distance=0.2, lattice='square',
+                 atom_diameter=0.1)
 crystal.grow_crystal()
 crystal.save_atom_positions()
 colours = plt.get_cmap("tab10").colors
-crystal.plot_crystal(colours=colours)
+crystal.plot_crystal(colours=colours, filename='crystal_mexer_006.png')
 
 

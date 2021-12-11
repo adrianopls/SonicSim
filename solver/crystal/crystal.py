@@ -75,7 +75,11 @@ class Crystal:
         
     def seed_grains(self):
         """Place the ngrain seeds randomly, a minimum distance apart."""
-
+        
+        """De acordo com o critério de validação de distancia minima entre os 
+        seeds (Origens) dos Grains, obtém o ponto de origem de cada um dos 
+        Grains e os instancia."""
+        
         print("seed_grains")
 
         # Reset the crystal.
@@ -84,28 +88,28 @@ class Crystal:
 
         for i in range(self.ngrains):
             while True:
-                site = np.random.random((2,))
-                site[0] = site[0] * self.xsize
-                site[1] = site[1] * self.ysize
-                print("\nsite: ", site)
+                grain_origin_atom_coord = np.random.random((2,))
+                grain_origin_atom_coord[0] = grain_origin_atom_coord[0] * self.xsize
+                grain_origin_atom_coord[1] = grain_origin_atom_coord[1] * self.ysize
+                print("\ngrain_origin_atom_coord: ", grain_origin_atom_coord)
                 print("len(self.atoms): ", len(self.atoms))
                 
                 for atom in self.atoms:
                     #print()
-                    print("atom site: ", site)
+                    print("atom grain_origin_atom_coord: ", grain_origin_atom_coord)
                     print("atom coords: ", atom.coords)
-                    print("atom distance: ", distance(site, atom.coords))
+                    print("atom distance: ", distance(grain_origin_atom_coord, atom.coords))
                     print("atom seed_minimum_distance: ", self.seed_minimum_distance)
                     
-                    if distance(site, atom.coords) < self.seed_minimum_distance:
+                    if distance(grain_origin_atom_coord, atom.coords) < self.seed_minimum_distance:
                         # Seed atom too close to another: go back and try again
                         break
                 else:
                     # Initialise a grain and add its seed atom.
-                    grain = Grain(i, site, self.lattice)
+                    grain = Grain(i, grain_origin_atom_coord, self.lattice)
                     self.grains.append(grain)
                     print("Atom 001")
-                    atom = Atom(grain, site)
+                    atom = Atom(grain, grain_origin_atom_coord)
                     self.atoms.append(atom)
                     self.sim_cells.add_atom_to_cell(atom)
                     break
@@ -298,4 +302,4 @@ crystal = Crystal(ngrains=1,
                   ysize=1000.0)
 
 crystal.grow_crystal()
-crystal.plot_crystal(linewidth=0, filename='crystal_008_4.png')
+crystal.plot_crystal(linewidth=0, filename='crystal_008_5.png')
