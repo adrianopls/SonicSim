@@ -79,10 +79,10 @@ class SimCells:
 
     """
 
-    def __init__(self, d):
+    def __init__(self, atom_diameter):
         """Initialize the cell size and the array of cells."""
 
-        self.n = int(1 / 2 / d)
+        self.n = int(1 / 2 / atom_diameter)
         self.a = 1 / self.n
         self.cell_array = [[[] for i in range(self.n)] for j in range(self.n)]
 
@@ -150,6 +150,11 @@ class Crystal:
         validação.
         """
         
+        """Caso no futuro deseje-se utilizar esta função para multiplos Grains
+        deve-se verificar a necessidade de ajustar o código, pois ocorre 
+        aceitação do seed proposto pelo randomize independente do critério de
+        validação seed_minimum_distance.
+        """
         
         # Reset the crystal.
         self.atoms, self.grains = [], []

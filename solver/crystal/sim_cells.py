@@ -33,6 +33,7 @@ class SimCells:
         print("cell_array.shape: ", np.asarray(self.cell_array).shape)
         print(np.asarray([1, 2, 3]).shape)
 
+
     def _get_cell_indexes_from_atom_coords(self, coords):
         """Return the indexes ix, iy of the cell containing point coords."""
 
@@ -46,13 +47,16 @@ class SimCells:
         """Return the cell containing atom."""
 
         ix, iy = self._get_cell_indexes_from_atom_coords(atom.coords)
-        #print("ix, iy: ", ix, iy)
+        
+        print("ix, iy: ", ix, iy)
         return self.cell_array[ix][iy]
+
 
     def add_atom_to_cell(self, atom):
         """Add atom to the appropriate cell."""
 
         self._get_atom_cell(atom).append(atom)
+
 
     def neighbouring_atoms_generator(self, coords):
         """Return a generator yielding all atoms "near" point coords."""

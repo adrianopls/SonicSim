@@ -80,14 +80,14 @@ def on_create_model(*args, **kwargs):
     dlg.view.AddStaticText(box_lattice, label='Lattice:', proportion=1)
     dlg.view.AddChoice(box_lattice, proportion=1, flag=wx.ALIGN_LEFT, widget_name='lattice', options=LATTICE_TYPES, initial=0)
     #   
-    box_seed_min_dist = dlg.view.AddCreateContainer('BoxSizer', ctn_model, 
-                                              orient=wx.HORIZONTAL, proportion=1, flag=wx.EXPAND|wx.ALL, border=5)
-    dlg.view.AddStaticText(box_seed_min_dist, label='Seed minimum distance:', proportion=1)
-    dlg.view.AddTextCtrl(box_seed_min_dist, proportion=1, flag=wx.ALIGN_LEFT, border=5, widget_name='seed_min_dist', initial=0.01)    
-    #
+    # box_seed_min_dist = dlg.view.AddCreateContainer('BoxSizer', ctn_model, 
+    #                                           orient=wx.HORIZONTAL, proportion=1, flag=wx.EXPAND|wx.ALL, border=5)
+    # dlg.view.AddStaticText(box_seed_min_dist, label='Seed minimum distance:', proportion=1)
+    # dlg.view.AddTextCtrl(box_seed_min_dist, proportion=1, flag=wx.ALIGN_LEFT, border=5, widget_name='seed_min_dist', initial=0.01)    
+    # #
     box_diameter = dlg.view.AddCreateContainer('BoxSizer', ctn_model, 
                                            orient=wx.HORIZONTAL, proportion=1, flag=wx.EXPAND|wx.ALL, border=5)
-    dlg.view.AddStaticText(box_diameter, label='Diameter:', proportion=1)
+    dlg.view.AddStaticText(box_diameter, label='Circle diameter:', proportion=1)
     dlg.view.AddTextCtrl(box_diameter, proportion=1, flag=wx.ALIGN_LEFT, border=5, widget_name='diameter', initial=0.5) # 10px
     #    
     #
@@ -233,9 +233,9 @@ def on_create_model(*args, **kwargs):
             print(results)
             filename='crystal_008.png'
             crystal = Crystal(ngrains=1, 
-                  seed_minimum_distance=float(results.get('seed_min_dist')), 
+                  #seed_minimum_distance=float(results.get('seed_min_dist')), 
                   lattice = results.get('lattice'),
-                  d=float(results.get('diameter')),
+                  atom_diameter=float(results.get('diameter')),
                   xsize= float(results.get('x_samples')), 
                   ysize=float(results.get('y_samples')))
 

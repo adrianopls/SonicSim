@@ -74,45 +74,65 @@ class Crystal:
         
         
     def seed_grains(self):
-        """Place the ngrain seeds randomly, a minimum distance apart."""
         
         """De acordo com o critério de validação de distancia minima entre os 
         seeds (Origens) dos Grains, obtém o ponto de origem de cada um dos 
         Grains e os instancia."""
         
-        print("seed_grains")
-
+        """Esta funcão foi ajustada em 11/12/2021 para quando só existir 
+        1 Grain aceitar diretamente o seed sugerido pelo ramdomize. Neste caso,
+        não há necessidade do uso de seed_minimum_distance como critério de 
+        validação.
+        """
+        
+        """Caso no futuro deseje-se utilizar esta função para multiplos Grains
+        deve-se verificar a necessidade de ajustar o código, pois ocorre 
+        aceitação do seed proposto pelo randomize independente do critério de
+        validação seed_minimum_distance.
+        """
+        
         # Reset the crystal.
         self.atoms, self.grains = [], []
-        self.sim_cells = SimCells(self.atom_diameter, factor=self.xsize)
+        self.sim_cells = SimCells(self.atom_diameter)
 
-        for i in range(self.ngrains):
-            while True:
-                grain_origin_atom_coord = np.random.random((2,))
-                grain_origin_atom_coord[0] = grain_origin_atom_coord[0] * self.xsize
-                grain_origin_atom_coord[1] = grain_origin_atom_coord[1] * self.ysize
-                print("\ngrain_origin_atom_coord: ", grain_origin_atom_coord)
-                print("len(self.atoms): ", len(self.atoms))
-                
-                for atom in self.atoms:
-                    #print()
-                    print("atom grain_origin_atom_coord: ", grain_origin_atom_coord)
-                    print("atom coords: ", atom.coords)
-                    print("atom distance: ", distance(grain_origin_atom_coord, atom.coords))
-                    print("atom seed_minimum_distance: ", self.seed_minimum_distance)
-                    
-                    if distance(grain_origin_atom_coord, atom.coords) < self.seed_minimum_distance:
-                        # Seed atom too close to another: go back and try again
+        if self.ngrains == 1:
+            grain_origin_atom_coord = np.random.random((2,))
+            grain_origin_atom_coord[0] *= self.xsize
+            grain_origin_atom_coord[1] *= self.ysize
+            
+            print("VEIO PRA CÁ")
+            # Initialise a grain and add its seed atom.
+            grain = Grain(0, grain_origin_atom_coord, self.lattice)
+            self.grains.append(grain)
+            atom = Atom(grain, grain_origin_atom_coord)
+            self.atoms.append(atom)
+            self.sim_cells.add_atom_to_cell(atom)            
+
+        else:
+            for i in range(self.ngrains):
+                print("\n\ni: ", i, len(self.atoms))
+                while True:
+                    grain_origin_atom_coord = np.random.random((2,))
+                    for atom in self.atoms:
+    
+                        if distance(grain_origin_atom_coord, atom.coords) < self.seed_minimum_distance:
+                            print(grain_origin_atom_coord, atom.coords, 
+                                  distance(grain_origin_atom_coord, atom.coords), 
+                                  self.seed_minimum_distance, len(self.atoms), "ACEITOU ATOM!\n")
+                            # Seed atom too close to another: go back and try again
+                            break
+                        print(grain_origin_atom_coord, atom.coords, 
+                              distance(grain_origin_atom_coord, atom.coords), 
+                              self.seed_minimum_distance, len(self.atoms), "NÃO ACEITOU ATOM!")
+                    else:
+                        print("VEIO PRA CÁ")
+                        # Initialise a grain and add its seed atom.
+                        grain = Grain(i, grain_origin_atom_coord, self.lattice)
+                        self.grains.append(grain)
+                        atom = Atom(grain, grain_origin_atom_coord)
+                        self.atoms.append(atom)
+                        self.sim_cells.add_atom_to_cell(atom)
                         break
-                else:
-                    # Initialise a grain and add its seed atom.
-                    grain = Grain(i, grain_origin_atom_coord, self.lattice)
-                    self.grains.append(grain)
-                    print("Atom 001")
-                    atom = Atom(grain, grain_origin_atom_coord)
-                    self.atoms.append(atom)
-                    self.sim_cells.add_atom_to_cell(atom)
-                    break
 
 
     def grow_crystal(self):
@@ -285,21 +305,29 @@ class Crystal:
 # Lattice - arranjo
 # ngrains = ngrains=5, seed_minimum_distance=0.2, lattice='hex',              atom_diameter=0.02
 
-# crystal = Crystal(ngrains=1, 
-#                    seed_minimum_distance=0.01, 
-#                    #lattice='hex', 
-#                    lattice = 'square',
-#                    atom_diameter=0.5,
-#                    xsize=1.0, 
-#                    ysize=1.0)
-
 crystal = Crystal(ngrains=1, 
-                  seed_minimum_distance=10.0, 
-                  #lattice='hex', 
-                  lattice = 'square',
-                  atom_diameter=100.0,
-                  xsize=1000.0, 
-                  ysize=1000.0)
+                    seed_minimum_distance=0.01, 
+                    #lattice='hex', 
+                    lattice = 'square',
+                    atom_diameter=0.5,
+                    xsize=256, 
+                    ysize=256)
+
+# crystal = Crystal(ngrains=1, 
+#                     seed_minimum_distance=0.01, 
+#                     #lattice='hex', 
+#                     lattice = 'square',
+#                     atom_diameter=0.5,
+#                     xsize=1.0, 
+#                     ysize=1.0)
+
+# crystal = Crystal(ngrains=1, 
+#                   seed_minimum_distance=10.0, 
+#                   #lattice='hex', 
+#                   lattice = 'square',
+#                   atom_diameter=100.0,
+#                   xsize=1000.0, 
+#                   ysize=1000.0)
 
 crystal.grow_crystal()
-crystal.plot_crystal(linewidth=0, filename='crystal_008_5.png')
+crystal.plot_crystal(linewidth=0, filename='crystal_008_6.png')
