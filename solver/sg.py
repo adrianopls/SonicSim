@@ -1,5 +1,4 @@
 
-
 import numpy as np
 
 from classes.om import ObjectManager
@@ -27,7 +26,7 @@ def staggeredGrid(model_uid, wavelet_uid, sim_steps, **kwargs):
     c2 = 0.5  # CFL-Number
 
 
-    
+    progress_dialog = kwargs.get("progress_dialog")
     
     #dx = kwargs['dx']
     #dy = kwargs['dy']
@@ -73,13 +72,13 @@ def staggeredGrid(model_uid, wavelet_uid, sim_steps, **kwargs):
     # Init wavefields
     vx = np.zeros((model.ny, model.nx))
     vy = np.zeros((model.ny, model.nx))
+    #
     wavefield = np.zeros((sim_steps, model.ny, model.nx))
-        
+    #   
  
+
+    
     # Calculate first Lame-Paramter
-    #self.lame_lambda = self._rho_grid * self._vp_grid * self._vp_grid
-    
-    
     lambda1 =  geo_layer_1.rho * geo_layer_1.vp * geo_layer_1.vp
     lambda2 = geo_layer_2.rho * geo_layer_2.vp* geo_layer_2.vp
     
@@ -111,6 +110,11 @@ def staggeredGrid(model_uid, wavelet_uid, sim_steps, **kwargs):
     print ()
     print("CFL_number: ")
     print(CFL_number)
+    print("vx dtype: " + str(vx.dtype))
+    print("vy dtype: " + str(vy.dtype))
+    print("wavefield dtype: " + str(wavefield.dtype))
+    print("rho_grid dtype: " + str(rho_grid.dtype))
+    print("lame_lambda dtype: " + str(lame_lambda.dtype))
     
     
     lampda_min = cmin / fmax        # Smallest wavelength
@@ -163,6 +167,7 @@ def staggeredGrid(model_uid, wavelet_uid, sim_steps, **kwargs):
     print("last idx: " + str(len(wavelet_data)-1))
     print("idx: ", idx)
     print("time: ", time_[idx])
+    
     print("\n\n")    
     
     
@@ -225,38 +230,39 @@ def staggeredGrid(model_uid, wavelet_uid, sim_steps, **kwargs):
     #
     
     
+    
+    
     # The true calculation starts here...    
     #
     for it in range(sim_steps):
         
-        # if (it % 10 == 0):
-        
-        #print('Calculating SG [' + str(it+1) + '/' + str(sim_steps) +']')
-        
-        if it<2:
+        # Update Progress Dialog if exists
+        if progress_dialog:
+            if progress_dialog.WasCancelled():
+                raise Exception("wx.ProgressDialog.WasCancelled")
+            progress_dialog.Update(it)
+            
+        # First step is just for reference        
+        if it==0:
             continue
-
+        
+        # Wavefield at step it is based on step it-1  
         wavefield[it, :, :] = wavefield[it-1, :, :]
         
-        
-        
+            
         # Update velocity
         for kx in range(5, model.nx-4):    
             for ky in range(5, model.ny-4):
-                
-                # Stress derivatives, p_dx(+) e p_dy(+) 
-                
+                #
+                # Calculate stress derivatives, p_dx(+) e p_dy(+) 
                 p_x = c1 * (wavefield[it, ky, kx+1] - wavefield[it, ky, kx]) - \
                       c2 * (wavefield[it, ky, kx+2] - wavefield[it, ky, kx-1])  # Eq. A-2 Lavender, 1988
-                
+                #
                 p_y = c1 * (wavefield[it, ky+1, kx] - wavefield[it, ky, kx]) - \
                       c2 * (wavefield[it, ky+2, kx] - wavefield[it, ky-1, kx])
-
-
-                # Velocity extrapolation using Euler Method
-                
-#                print("vy[ky, kx]: ", ky, kx, vy[ky, kx] )
-
+                #      
+                #
+                # Now, based on stress derivatives, calculate vx and vy for all grid points.
                 try:
                     vx[ky, kx] -=  (dt_dx / rho_grid[ky, kx]) * p_x 
                     vy[ky, kx] -=  (dt_dx / rho_grid[ky, kx]) * p_y   
@@ -264,22 +270,34 @@ def staggeredGrid(model_uid, wavelet_uid, sim_steps, **kwargs):
                     print("rho_grid[ky, kx]: ", ky, kx, rho_grid[ky, kx] )
                     print("vx[ky, kx]: ", ky, kx, vx[ky, kx] )
                     print("vy[ky, kx]: ", ky, kx, vy[ky, kx] )
-                    
                     pass
-                #vx[ky, kx] = vx[ky, kx] - dt / rho_grid[ky, kx] * p_x
-                #vy[ky, kx] = vy[ky, kx] - dt / rho_grid[ky, kx] * p_y
+                
+                
+
+        # boundary condition clears velocities on boundaries 
+        # Boundaries V
+        # if ky == 5:
+        #     p_x = p_y = 0
+
+        
+        # # Boundaries
+        # for kx in range(0, model.nx):
+        #     for ky in range(0, 5):
+        #         wavefield[it, ky, kx] = 0.0
+            
+
+
+        # Boundaries - Free surface at top at Pos y=4
+        # top_bnd_top_pos = 4
+        # for kx in range(0, model.nx):
+        #     vy[top_bnd_top_pos, kx]   = vy[top_bnd_top_pos+1, kx]
+        #     vy[top_bnd_top_pos-1, kx] = vy[top_bnd_top_pos+2, kx]
 
 
 
         # Inject source wavelet
         if it < np.size(wavelet_data):
-            
             wavefield[it, sou_y, sou_x] += wavelet_data[it]
-
-        # Verificar a possibilidade abaixo - Curso W4V8 
-        #vx[sou_y, sou_x] = vx[sou_y, sou_x]  + dt * wavelet[it] / (dt * rho_grid[sou_y, sou_x])
-        #vy[sou_y, sou_x] = vy[sou_y, sou_x]  + dt * wavelet[it] / (dt * rho_grid[sou_y, sou_x])
-        #
 
 
 
@@ -288,27 +306,29 @@ def staggeredGrid(model_uid, wavelet_uid, sim_steps, **kwargs):
             for ky in range(5, model.ny-4):
                 
                 # Velocity derivatives, vx_dx(-) e vy_dy(-)  # Qian et al 2013
-                vx_x = c1 * (vx[ky, kx] - vx[ky, kx-1]) - c2 * (vx[ky, kx+1] - vx[ky, kx-2])  # Dx-, 
+                vx_x = c1 * (vx[ky, kx] - vx[ky, kx-1]) - c2 * (vx[ky, kx+1] - vx[ky, kx-2])  # Dx-,      
                 vy_y = c1 * (vy[ky, kx] - vy[ky-1, kx]) - c2 * (vy[ky+1, kx] - vy[ky-2, kx])  # Dy-, 
+                
+                
+                # if ky == 5:
+                #     vx_x = vy_y = 0.0
+                
                 #
                 wavefield[it, ky, kx] -=  (dt_dx * lame_lambda[ky, kx]) * (vx_x + vy_y)
                 
-                
-                # try:
-                #     termo = lame_lambda[ky, kx] * dt #* (vx_x + vy_y)
-                #     termo = (vx_dx + vy_dy) * termo
-                # except:
-                #     print()
-                #     print(it)
-                #     print(lame_lambda[ky, kx])
-                #     print(vx_dx + vy_dy)
-                #     print(dt)
-                #     print()
-                    
-                    
-                #wavefield[it, ky, kx] = wavefield[it, ky, kx] - termo   # lame_lambda[ky, kx] * dt * (vx_x + vy_y)
+
  
     
+        # Boundaries
+        # for kx in range(0, model.nx):
+        # #     for ky in range(0, 5):
+        #     wavefield[it, 4, kx] = 0.0 
+        #     wavefield[it, 3, kx] = 0.0 
+            
+ 
+
+    
+ 
     print("Wavefield Min-Max: ", np.min(wavefield), " - ",  np.max(wavefield))   
     print(model.dx, model.dy, dt)
     return wavefield, model.dx, model.dy, dt, CFL_number, n_gp_wl

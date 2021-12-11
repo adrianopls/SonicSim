@@ -56,9 +56,8 @@ def load():
     UIM.create('menu_item_controller', mc_model.uid, 
             label="&Create model", 
             help="Create a new model",
-            enabled=False
             #id=wx.ID_OPEN,
-            #callback='app.menu_functions.on_open'
+            callback="app.menu_functions.on_create_model"
     )          
     UIM.create('menu_item_controller', mc_model.uid, 
             label="&Save model", 

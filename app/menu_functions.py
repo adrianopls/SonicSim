@@ -24,16 +24,21 @@ from collections import OrderedDict
 import wx
 import numpy as np
 import matplotlib.pyplot as plt
+from PIL import Image
 
 from . import interface
 from classes.uim import UIManager
 from classes.om import ObjectManager
 from solver.sg import staggeredGrid
+from solver.crystal import Crystal
 
 
 WAVELET_TYPES = OrderedDict()
 WAVELET_TYPES['Ricker'] = 'ricker'
 
+LATTICE_TYPES = OrderedDict()
+LATTICE_TYPES['Square'] = 'square'
+LATTICE_TYPES['Hexagonal'] = 'hex'
 
 
 def on_console(*args, **kwargs):
@@ -41,6 +46,279 @@ def on_console(*args, **kwargs):
     UIM = UIManager()
     mwc = wx.App.Get().get_main_window_controller()
     UIM.create('console_controller', mwc.uid)
+
+
+
+def on_create_model(*args, **kwargs):
+    
+    OM = ObjectManager()
+    UIM = UIManager()
+    #
+    dlg = UIM.create('dialog_controller', title='Create 2 layers model')
+    #
+    # ctn_name = dlg.view.AddCreateContainer('StaticBox', 
+    #                                        label='New model name', 
+    #                                        orient=wx.VERTICAL, 
+    #                                        proportion=0, 
+    #                                        flag=wx.EXPAND|wx.TOP, border=5)
+    # dlg.view.AddTextCtrl(ctn_name, proportion=0, flag=wx.EXPAND|wx.TOP, 
+    #                      border=5, widget_name='model_name', 
+    #                      initial=file_name.split(".")[0])     
+    #    
+    #
+
+    ctn_model = dlg.view.AddCreateContainer('StaticBox', label='Model', orient=wx.VERTICAL, 
+                                              proportion=0, flag=wx.EXPAND|wx.TOP, border=5)
+    #
+    box_name = dlg.view.AddCreateContainer('BoxSizer', ctn_model, 
+                                           orient=wx.HORIZONTAL, proportion=1, flag=wx.EXPAND|wx.ALL, border=5)
+    dlg.view.AddStaticText(box_name, label='Name:', proportion=1)
+    dlg.view.AddTextCtrl(box_name, proportion=1, flag=wx.ALIGN_LEFT, border=5, widget_name='model_name', initial="MEU_MODELAO") 
+    #
+    box_lattice = dlg.view.AddCreateContainer('BoxSizer', ctn_model, 
+                                              orient=wx.HORIZONTAL, proportion=1, flag=wx.EXPAND|wx.ALL, border=5)
+    dlg.view.AddStaticText(box_lattice, label='Lattice:', proportion=1)
+    dlg.view.AddChoice(box_lattice, proportion=1, flag=wx.ALIGN_LEFT, widget_name='lattice', options=LATTICE_TYPES, initial=0)
+    #   
+    box_seed_min_dist = dlg.view.AddCreateContainer('BoxSizer', ctn_model, 
+                                              orient=wx.HORIZONTAL, proportion=1, flag=wx.EXPAND|wx.ALL, border=5)
+    dlg.view.AddStaticText(box_seed_min_dist, label='Seed minimum distance:', proportion=1)
+    dlg.view.AddTextCtrl(box_seed_min_dist, proportion=1, flag=wx.ALIGN_LEFT, border=5, widget_name='seed_min_dist', initial=0.01)    
+    #
+    box_diameter = dlg.view.AddCreateContainer('BoxSizer', ctn_model, 
+                                           orient=wx.HORIZONTAL, proportion=1, flag=wx.EXPAND|wx.ALL, border=5)
+    dlg.view.AddStaticText(box_diameter, label='Diameter:', proportion=1)
+    dlg.view.AddTextCtrl(box_diameter, proportion=1, flag=wx.ALIGN_LEFT, border=5, widget_name='diameter', initial=0.5) # 10px
+    #    
+    #
+    
+    
+    # X Axis
+    #
+    def on_change_x_size(name, old_value, new_value, **kwargs):
+        try:
+            x_samples = float(dlg.view.get_object('x_samples').get_value())
+            x_spacing = float(dlg.view.get_object('x_spacing').get_value())
+            res = str(x_samples * x_spacing) 
+        except:
+            res = ""
+        textctrl_x_size = dlg.view.get_object('x_size')
+        textctrl_x_size.set_value(res)      
+    #
+    #
+    ctn_x_axis = dlg.view.AddCreateContainer('StaticBox', label='X axis', 
+                                             orient=wx.HORIZONTAL, proportion=0, flag=wx.EXPAND|wx.TOP, border=5)
+    #
+    ctn_x_samples = dlg.view.AddCreateContainer('StaticBox', ctn_x_axis, 
+                                                label='Samples', orient=wx.VERTICAL, proportion=1, flag=wx.EXPAND|wx.TOP, border=5)
+    dlg.view.AddTextCtrl(ctn_x_samples, proportion=0, flag=wx.EXPAND|wx.TOP, 
+                         border=5, widget_name='x_samples', initial=100)  
+    textctrl_x_samples = dlg.view.get_object('x_samples')
+    textctrl_x_samples.set_trigger(on_change_x_size)
+    #
+    ctn_x_spacing = dlg.view.AddCreateContainer('StaticBox', ctn_x_axis, 
+                                                label='Spacing(m)', orient=wx.VERTICAL, proportion=1, flag=wx.EXPAND|wx.TOP, border=5)
+    dlg.view.AddTextCtrl(ctn_x_spacing, proportion=0, flag=wx.EXPAND|wx.TOP, 
+                         border=5, widget_name='x_spacing', initial=0.01)
+    textctrl_x_spacing = dlg.view.get_object('x_spacing')
+    textctrl_x_spacing.set_trigger(on_change_x_size)
+    #
+    ctn_x_size = dlg.view.AddCreateContainer('StaticBox', ctn_x_axis, 
+                                                label='Size(m)', orient=wx.VERTICAL, proportion=1, flag=wx.EXPAND|wx.TOP, border=5)
+    dlg.view.AddTextCtrl(ctn_x_size, proportion=1, flag=wx.EXPAND|wx.TOP, 
+                         border=5, widget_name='x_size')
+    textctrl_x_size = dlg.view.get_object('x_size')
+    textctrl_x_size.disable()
+    #
+    on_change_x_size(None, None, None)
+    #    
+          
+    
+    # Y Axis
+    #   
+    def on_change_y_size(name, old_value, new_value, **kwargs):
+        try:
+            y_samples = float(dlg.view.get_object('y_samples').get_value())
+            y_spacing = float(dlg.view.get_object('y_spacing').get_value())
+            res = str(y_samples * y_spacing) 
+        except:
+            res = ""
+        textctrl_y_size = dlg.view.get_object('y_size')
+        textctrl_y_size.set_value(res)      
+    #
+    #
+    ctn_y_axis = dlg.view.AddCreateContainer('StaticBox', label='Y axis', 
+                                             orient=wx.HORIZONTAL, 
+                                             proportion=0, 
+                                             flag=wx.EXPAND|wx.TOP, border=5)
+    #
+    ctn_y_samples = dlg.view.AddCreateContainer('StaticBox', ctn_y_axis, 
+                                                label='Samples', 
+                                                orient=wx.VERTICAL, 
+                                                proportion=1, 
+                                                flag=wx.EXPAND|wx.TOP, 
+                                                border=5)
+    dlg.view.AddTextCtrl(ctn_y_samples, proportion=0, flag=wx.EXPAND|wx.TOP, 
+                         border=5, widget_name='y_samples', initial=100)  
+    textctrl_y_samples = dlg.view.get_object('y_samples')
+    textctrl_y_samples.set_trigger(on_change_y_size)
+    #
+    ctn_y_spacing = dlg.view.AddCreateContainer('StaticBox', ctn_y_axis, 
+                                                label='Spacing(m)', 
+                                                orient=wx.VERTICAL, 
+                                                proportion=1, 
+                                                flag=wx.EXPAND|wx.TOP, 
+                                                border=5)
+    dlg.view.AddTextCtrl(ctn_y_spacing, proportion=0, flag=wx.EXPAND|wx.TOP, 
+                         border=5, widget_name='y_spacing', initial=0.01)
+    textctrl_y_spacing = dlg.view.get_object('y_spacing')
+    textctrl_y_spacing.set_trigger(on_change_y_size)
+    #
+    ctn_y_size = dlg.view.AddCreateContainer('StaticBox', ctn_y_axis, 
+                                                label='Size(m)', 
+                                                orient=wx.VERTICAL, 
+                                                proportion=1, 
+                                                flag=wx.EXPAND|wx.TOP, 
+                                                border=5)
+    dlg.view.AddTextCtrl(ctn_y_size, proportion=1, flag=wx.EXPAND|wx.TOP, 
+                         border=5, widget_name='y_size')
+    textctrl_y_size = dlg.view.get_object('y_size')
+    textctrl_y_size.disable()
+    #
+    on_change_y_size(None, None, None)
+    #    
+    
+    
+    ctn_prop_matrix = dlg.view.AddCreateContainer('StaticBox', label='Matrix properties', 
+                                             orient=wx.HORIZONTAL, proportion=0, flag=wx.EXPAND|wx.TOP, border=5)
+    #
+    ctn_matrix_vp = dlg.view.AddCreateContainer('StaticBox', ctn_prop_matrix, 
+                                                label='Vp(m/s)', orient=wx.VERTICAL, proportion=1, flag=wx.EXPAND|wx.TOP, border=5)
+    dlg.view.AddTextCtrl(ctn_matrix_vp, proportion=0, flag=wx.EXPAND|wx.TOP, 
+                         border=5, widget_name='matrix_vp', initial=4000.0)  
+    #
+    ctn_matrix_rho = dlg.view.AddCreateContainer('StaticBox', ctn_prop_matrix, 
+                                                label='Rho(m/s)', orient=wx.VERTICAL, proportion=1, flag=wx.EXPAND|wx.TOP, border=5)
+    dlg.view.AddTextCtrl(ctn_matrix_rho, proportion=0, flag=wx.EXPAND|wx.TOP, 
+                         border=5, widget_name='matrix_rho', initial=3.0)  
+    #
+    
+    
+    ctn_prop_pores = dlg.view.AddCreateContainer('StaticBox', label='Pores properties', 
+                                             orient=wx.HORIZONTAL, proportion=0, flag=wx.EXPAND|wx.TOP, border=5)
+    #    
+    
+    ctn_pores_vp = dlg.view.AddCreateContainer('StaticBox', ctn_prop_pores, 
+                                                label='Vp(m/s)', orient=wx.VERTICAL, proportion=1, flag=wx.EXPAND|wx.TOP, border=5)
+    dlg.view.AddTextCtrl(ctn_pores_vp, proportion=0, flag=wx.EXPAND|wx.TOP, 
+                         border=5, widget_name='pores_vp', initial=2500.0)  
+    #
+    ctn_pores_rho = dlg.view.AddCreateContainer('StaticBox', ctn_prop_pores, 
+                                                label='Rho(m/s)', orient=wx.VERTICAL, proportion=1, flag=wx.EXPAND|wx.TOP, border=5)
+    dlg.view.AddTextCtrl(ctn_pores_rho, proportion=0, flag=wx.EXPAND|wx.TOP, 
+                         border=5, widget_name='pores_rho', initial=2.2)  
+    #    
+    
+
+    
+    
+    dlg.view.SetSize((400, 580))
+    result = dlg.view.ShowModal()
+
+    try:
+        disableAll = wx.WindowDisabler()
+        wait = wx.BusyInfo("Creating model. Wait...")
+        if result == wx.ID_OK:
+            results = dlg.get_results()  
+            print(results)
+            filename='crystal_008.png'
+            crystal = Crystal(ngrains=1, 
+                  seed_minimum_distance=float(results.get('seed_min_dist')), 
+                  lattice = results.get('lattice'),
+                  d=float(results.get('diameter')),
+                  xsize= float(results.get('x_samples')), 
+                  ysize=float(results.get('y_samples')))
+
+            crystal.grow_crystal()
+            crystal.plot_crystal(linewidth=0, filename=filename)
+
+
+            print("\n\n")
+            fullfilename=filename
+            print (fullfilename)
+            
+            input_vec = plt.imread(fullfilename)
+
+
+            print(input_vec.shape)
+            print(input_vec.dtype)
+            
+            if (len(input_vec.shape) == 2):
+                print(input_vec[100,100])
+                
+            elif (len(input_vec.shape) == 3):    
+                
+                ny, nx, ncolor = input_vec.shape
+                
+                new_vec = np.zeros((ny, nx), dtype=np.int8)
+                
+                if (input_vec.shape[2] == 4):
+                    # RGBA
+                    for y in range(ny):
+                        for x in range(nx):
+                            new_vec[y, x] = (input_vec[y, x, 0] + input_vec[y, x, 1] + 
+                                             input_vec[y, x, 2] + input_vec[y, x, 3])/4  
+                    
+                    
+                    #new_vec = np.array(Image.open(fullfilename).convert('L'))
+                    
+                    #print(new_vec)
+                    #print(new_vec[100,100])
+                    values = np.unique(new_vec)
+            
+                    #print(values.size)
+                    
+                    input_vec = new_vec
+                #print(input_vec[100,100])
+
+
+
+
+            values = np.unique(input_vec)
+
+            am = OM.new('acoustic_2d_model', input_vec, 
+                        dx=results.get('x_spacing'), 
+                        dy=results.get('y_spacing'), 
+                        name=results.get('model_name'))
+            result = OM.add(am)
+            
+            print ('result acoustic_2d_model:', result, args, kwargs)
+    
+    
+            layer1 = OM.new('geolayer', value=values[0], vp=results.get('matrix_vp'), rho=results.get('matrix_rho'), name="Layer 1")
+            result = OM.add(layer1, am.uid)
+            print ('result layer 1:', result)
+            
+            if values.size == 2:
+                layer2 = OM.new('geolayer', value=values[1], vp=results.get('pores_vp'), rho=results.get('pores_rho'), name="Layer 2")
+                result = OM.add(layer2, am.uid)
+                print ('result layer 2:', result)    
+    
+    
+            print(input_vec.shape)
+
+            
+            
+    except Exception as e:
+        print ('ERROR [on_create_model]:', str(e))
+        raise
+    finally:
+        del wait
+        del disableAll
+        UIM.remove(dlg.uid)
+
+
+
 
 
 def on_load_model(*args, **kwargs):
@@ -67,7 +345,44 @@ def on_load_model(*args, **kwargs):
     
     input_vec = plt.imread(fullfilename)
     
+    
+    print(input_vec.shape)
+    print(input_vec.dtype)
+    
+    if (len(input_vec.shape) == 2):
+        print(input_vec[100,100])
+        
+    elif (len(input_vec.shape) == 3):    
+        
+        ny, nx, ncolor = input_vec.shape
+        
+        new_vec = np.zeros((ny, nx), dtype=np.int8)
+        
+        if (input_vec.shape[2] == 4):
+            # RGBA
+            for y in range(ny):
+                for x in range(nx):
+                    new_vec[y, x] = (input_vec[y, x, 0] + input_vec[y, x, 1] + 
+                                     input_vec[y, x, 2] + input_vec[y, x, 3])/4  
+            
+            
+            #new_vec = np.array(Image.open(fullfilename).convert('L'))
+            
+            print(new_vec)
+            print(new_vec[100,100])
+            values = np.unique(new_vec)
+    
+            print(values.size)
+            
+            input_vec = new_vec
+        #print(input_vec[100,100])
+        
+        
+    
+    
     values = np.unique(input_vec)
+    
+    print(values.size)
     
     if values.size > 2:
         msg = "File {} is not a binary segmentated file!".format(file_name)
@@ -411,19 +726,28 @@ def on_create_simulation(*args, **kwargs):
     result = dlg.view.ShowModal()
     #
     try:
-        disableAll = wx.WindowDisabler()
-        wait = wx.BusyInfo("Creating simulation. Wait...")
+        #disableAll = wx.WindowDisabler()
+        #wait = wx.BusyInfo("Creating simulation. Wait...")
         if result == wx.ID_OK:
             results = dlg.get_results()          
-            print (results)
+            #print (results)
+            
+            
+            dialog = wx.ProgressDialog("Staggered grid simulation", "Time remaining", 
+                                int(results.get('sim_steps')),
+                                style=wx.PD_CAN_ABORT|wx.PD_ELAPSED_TIME|wx.PD_REMAINING_TIME
+            )
             
             wavefield, dx, dy, dt, cfl, c1 = staggeredGrid(results.get('model'),
                                                   results.get('wavelet'),
                                                   int(results.get('sim_steps')),
                                                   sou_x=int(results.get('soux')),
-                                                  sou_y=int(results.get('souy'))
-                                                  )
+                                                  sou_y=int(results.get('souy')),
+                                                  progress_dialog=dialog
+            )
+            #
             
+            #
             simulation = OM.new('simulation', wavefield,
                                 dx=dx, dy=dy, dt=dt,
                                 sou_x=int(results.get('soux')),
@@ -447,11 +771,12 @@ def on_create_simulation(*args, **kwargs):
             
     except Exception as e:
         print ('ERROR [on_create_model]:', str(e))
-        raise
+        #raise
         
     finally:
-        del wait
-        del disableAll
+        dialog.Destroy()
+        #del wait
+        #del disableAll
         UIM.remove(dlg.uid)            
         
         

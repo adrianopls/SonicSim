@@ -48,16 +48,119 @@ class SGAnimation:
         #title = kwargs['title']
 
 
-        # # Receiver Position
-        # self._xrec1 = kwargs['x_rec1'] 
-        # self._yrec1 = kwargs['y_rec1']    # Position Reciever 1 (in grid points)
-        
-        # self._xrec2 = kwargs['x_rec2'] 
-        # self._yrec2 = kwargs['y_rec2']    # Position Reciever 2 (in grid points)
-        
-        # self._xrec3 = kwargs['x_rec3'] 
-        # self._yrec3 = kwargs['y_rec3']    # Position Reciever 3 (in grid points)
 
+        # # Receiver Position
+        self._xrec1 = kwargs.get('x_rec1') 
+        self._yrec1 = kwargs.get('y_rec1')    # Position Reciever 1 (in grid points)
+        
+        self._xrec2 = kwargs.get('x_rec2') 
+        self._yrec2 = kwargs.get('y_rec2')    # Position Reciever 2 (in grid points)
+        
+        self._xrec3 = kwargs.get('x_rec3') 
+        self._yrec3 = kwargs.get('y_rec3')    # Position Reciever 3 (in grid points)
+
+
+
+        self.main_ax = cc._main_panel.plot_axes
+
+        sec_axes = cc._main_panel.get_secondary_axes()
+
+        #
+        #
+        self.t = np.arange(0, self.dt*self.steps, self.dt)     # Time vector
+        self.nt = np.arange(0, self.steps)
+        #
+        #
+        
+        
+
+
+        if self._xrec1 and self._yrec1:
+            rec1_color = 'black'
+            self.ax0 = sec_axes[0]    
+            self.ax0.set_xlabel('Step')
+            self.ax0.set_ylabel('Amplitude')
+            self.ax0.set_xticks((0, self.steps/4, self.steps/2, 3*self.steps/4, self.steps))
+            self.ax0.set_yticks((vmin, 0, vmax))
+            self.seis_line0 = matplotlib.lines.Line2D((0.0, 0.0), (0.0, 0.0), c=rec1_color)
+            self.ax0.set_xlim(0, len(self.t))
+            self.ax0.set_ylim(vmin, vmax)
+            self.ax0.add_line(self.seis_line0)
+            self.path_scatter1 = self.main_ax.scatter(self._xrec1, self._yrec1, s=30, c=rec1_color, marker="v") 
+            #
+            self.ax0.xaxis.labelpad = 1.0
+            self.ax0.xaxis.label.update({'size': '8'})
+            self.ax0.yaxis.labelpad = 1.0
+            self.ax0.yaxis.label.update({'size': '8'})
+            
+            self.ax0.xaxis.labelpad = 1.0
+            self.ax0.yaxis.labelpad = 1.0
+            self.ax0.yaxis.set_tick_params(which="both", labelsize=8)
+            self.ax0.xaxis.set_tick_params(which="both", labelsize=8)
+            
+        else:
+            self.ax0 = None
+            self.seis_line0 = None
+            self.path_scatter1 = None
+
+
+        if self._xrec2 and self._yrec2:
+            rec2_color = 'red'
+            self.ax1 = sec_axes[1]   
+            self.ax1.set_xlabel('Step')
+            self.ax1.set_ylabel('Amplitude')
+            self.ax1.set_xticks((0, self.steps/4, self.steps/2, 3*self.steps/4, self.steps))
+            self.ax1.set_yticks((vmin, 0, vmax))
+            self.seis_line1 = matplotlib.lines.Line2D((0.0, 0.0), (0.0, 0.0), c=rec2_color)
+            self.ax1.set_xlim(0, len(self.t))
+            self.ax1.set_ylim(vmin, vmax)
+            self.ax1.add_line(self.seis_line1)
+            self.path_scatter2 = self.main_ax.scatter(self._xrec2, self._yrec2, s=30, c=rec2_color, marker="v")         
+            #
+            self.ax1.xaxis.labelpad = 1.0
+            self.ax1.xaxis.label.update({'size': '8'})
+            self.ax1.yaxis.labelpad = 1.0
+            self.ax1.yaxis.label.update({'size': '8'})
+            
+            self.ax1.xaxis.labelpad = 1.0
+            self.ax1.yaxis.labelpad = 1.0
+            self.ax1.yaxis.set_tick_params(which="both", labelsize=8)
+            self.ax1.xaxis.set_tick_params(which="both", labelsize=8)
+            
+            
+        else:
+            self.ax1 = None
+            self.seis_line1 = None
+            self.path_scatter2 = None
+
+
+        if self._xrec3 and self._yrec3:
+            rec3_color = 'teal'
+            self.ax2 = sec_axes[2]                        
+            self.ax2.set_xlabel('Step')
+            self.ax2.set_ylabel('Amplitude')
+            self.ax2.set_xticks((0, self.steps/4, self.steps/2, 3*self.steps/4, self.steps))
+            self.ax2.set_yticks((vmin, 0, vmax))
+            self.seis_line2 = matplotlib.lines.Line2D((0.0, 0.0), (0.0, 0.0), c=rec3_color)
+            self.ax2.set_xlim(0, len(self.t))
+            self.ax2.set_ylim(vmin, vmax)
+            self.ax2.add_line(self.seis_line2)         
+            self.path_scatter3 = self.main_ax.scatter(self._xrec3, self._yrec3, s=30, c=rec3_color, marker="v") 
+            #
+            self.ax2.xaxis.labelpad = 1.0
+            self.ax2.xaxis.label.update({'size': '8'})
+            self.ax2.yaxis.labelpad = 1.0
+            self.ax2.yaxis.label.update({'size': '8'})
+            
+            self.ax2.xaxis.labelpad = 1.0
+            self.ax2.yaxis.labelpad = 1.0
+            self.ax2.yaxis.set_tick_params(which="both", labelsize=8)
+            self.ax2.xaxis.set_tick_params(which="both", labelsize=8)
+            
+        else:
+            self.ax2 = None
+            self.seis_line2 = None
+            self.path_scatter3 = None
 
 
         # No vetor grid, pontos com valor 1 estao associados a Fase 1 (rocha,
@@ -69,6 +172,9 @@ class SGAnimation:
         # self.rho2 = 2.2
         # self.vp2 = 3000.0
 
+
+        cc.view._main_panel.draw()
+        #super().draw(drawDC)
 
         self.main_ax = cc._main_panel.plot_axes
 
@@ -118,7 +224,7 @@ class SGAnimation:
         #self.img_wavefield.set_cmap("RdBu")
         
 
-        self.cpc = UIM.list('canvas_plotter_controller', cc.uid)[0]
+        self.cpc = UIM.list('canvas_plotter_controller_jun21', cc.uid)[0]
         self.cpc.figure_titletext = simulation.name 
         
         # xlim = (0, simulation.nx)
@@ -206,18 +312,16 @@ class SGAnimation:
             
         self.main_ax.scatter(simulation.sou_x, simulation.sou_y, s=30, c=sou_color, marker=(5, 2))    
         
-        # main_ax.scatter(self._xrec1, self._yrec1, s=30, c=rec1_color, marker="v")    
-        # main_ax.scatter(self._xrec2, self._yrec2, s=30, c=rec2_color, marker="v")   
-        # main_ax.scatter(self._xrec3, self._yrec3, s=30, c=rec3_color, marker="v")   
+        # self.main_ax.scatter(self._xrec1, self._yrec1, s=30, c=rec1_color, marker="v")    
+        # self.main_ax.scatter(self._xrec2, self._yrec2, s=30, c=rec2_color, marker="v")   
+        # self.main_ax.scatter(self._xrec3, self._yrec3, s=30, c=rec3_color, marker="v")   
         
             
         # seis_ax0 = args[0]
         # seis_ax1 = args[1]
         # seis_ax2 = args[2]
         
-        
-        # self.t = np.arange(0, self.dt*self.steps, self.dt)     # Time vector
-        # self.nt = np.arange(0, self.steps)
+
         
 
         # #seis_ax0.set_title('Receiver 1 (' + rec1_color + ')')
@@ -258,7 +362,7 @@ class SGAnimation:
     def init_func(self):    
         
         
-        return self.img_wavefield, self.time_text #, self.seis_line0, self.seis_line1, self.seis_line2
+        return self.img_wavefield, self.time_text, self.seis_line0, self.seis_line1, self.seis_line2
 
     
 
@@ -276,12 +380,12 @@ class SGAnimation:
 
         self.img_wavefield.set_data(self.wavefield[it,:,:])
   
-        # self.seis_line0.set_data(self.nt[0:it], self.wavefield[0:it, self._yrec1, self._xrec1])
-        # self.seis_line1.set_data(self.nt[0:it], self.wavefield[0:it, self._yrec2, self._xrec2])
-        # self.seis_line2.set_data(self.nt[0:it], self.wavefield[0:it, self._yrec3, self._xrec3])
+        self.seis_line0.set_data(self.nt[0:it], self.wavefield[0:it, self._yrec1, self._xrec1])
+        self.seis_line1.set_data(self.nt[0:it], self.wavefield[0:it, self._yrec2, self._xrec2])
+        self.seis_line2.set_data(self.nt[0:it], self.wavefield[0:it, self._yrec3, self._xrec3])
     
     
-        return self.img_wavefield, self.time_text #, self.seis_line0, self.seis_line1, self.seis_line2
+        return self.img_wavefield, self.time_text, self.seis_line0, self.seis_line1, self.seis_line2
 
 
 

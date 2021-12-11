@@ -1,9 +1,18 @@
 
 import wx
 from classes.uim import UIManager
+from classes.om import ObjectManager
 
 UIM = UIManager()
 mwc = wx.App.Get().get_main_window_controller()
+
+
+OM = ObjectManager()
+model = OM.get(("acoustic_2d_model", 0))
+
+porosity = model.get_porosity(float(0.0))
+
+print(porosity)
 
 
 wc = UIM.create('workpage_controller', mwc.uid)
