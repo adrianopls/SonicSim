@@ -12,67 +12,18 @@ from matplotlib.patches import Polygon
 import random
 
 
+# from .atom import Atom
+# from .grain import Grain
+# from .sim_cells import SimCells
+
+
+from atom import Atom
+from grain import Grain
+from sim_cells import SimCells
+
+
 DEFAULT_DPI=100.0
 
-
-class Atom:
-    """A simple atom in a 2-D crystal grain, with its coordinates."""
-
-    def __init__(self, grain, coords):
-        #print("Atom: ", grain.grain_id , coords)
-        self.grain = grain
-        self.coords = coords
-
-
-class Grain:
-    """A grain in a 2-D (poly-)crystal.
-
-    grain_id is the unique ID of the grain, seed is the (x,y) coordinates of
-    the first atom placed in the grain, and lattice is a string identifying
-    which kind of crystal lattice to use ('hex' or 'square').
-
-    """
-
-    def __init__(self, grain_id, seed, lattice='hex'):
-        #print()
-        #print("Grain: ", grain_id, seed, lattice)
-        self.grain_id = grain_id
-        self.seed = seed
-        self.lattice = lattice
-        # Initialize the displacements for other atoms around a reference atom,
-        # and the maximum rotation angle, phi, to obtain all orientations.
-        if lattice == 'hex':
-            # Hexagonal lattice: 6 other atoms in a hexagonal pattern.
-            a, b = 0.5, np.sqrt(3)/2
-            self.lattice_disp = np.array(
-                    [[a,-b],[1,0],[a,b],[-a,b],[-1,0],[-a,-b]]).T
-            self.phi = np.pi / 3
-        elif lattice == 'square':
-            # Square lattice: 4 other atoms placed orthogonally.
-            self.lattice_disp = np.array([[1.,0],[0,1.],[-1.,0],[0,-1.]]).T
-            self.phi = np.pi / 2
-        else:
-            raise Exception('Undefined lattice type: {}'.format(lattice))
-
-        # Rotate the displacements by some random angle up to phi.
-        self.setup_rotated_displacements()
-
-    def setup_rotated_displacements(self):
-        """Rotate atom displacements at random to change the orientation."""
-
-        def _make_rot_matrix(alpha):
-            return np.array([[np.cos(alpha), -np.sin(alpha)],
-                             [np.sin(alpha), np.cos(alpha)]])
-        theta = np.random.rand() * self.phi
-        # Two-dimensional rotation matrix.
-        self.rot = _make_rot_matrix(theta)
-        self.lattice_disp = (self.rot @ self.lattice_disp).T
-        patch_rot = _make_rot_matrix(self.phi/2)
-        if self.lattice == 'hex':
-            a = 1 / np.sqrt(3)
-        else:
-            a = 1 / np.sqrt(2)
-        self.patch_disp = a * (patch_rot @ self.lattice_disp.T).T
 
 
 def distance(p, q):
@@ -80,71 +31,12 @@ def distance(p, q):
     return np.hypot(*(p-q))
 
 
-class SimCells:
-    """A region of the simulation area to search for neighbours.
-
-    To save us from calculating all the pairwise distances, keep track of
-    the location of atoms in "cells": for a given candidate site, we then only
-    need to look within that site's cell and its immediate neighbouring cells.
-
-    """
-
-    def __init__(self, d, factor=1.0):
-        """Initialize the cell size and the array of cells."""
-        self.factor = factor
-        print()
-        print("DISTANCE: ", d)
-        self.n = int((1*self.factor) / 2 / d)
-        print("N: ", self.n)
-        self.a = 1 / self.n
-        print(self.n)
-        print("a: ", self.a)
-        
-        self.cell_array = [[[] for i in range(self.n)] for j in range(self.n)]
-        
-        print("cell_array.shape: ", np.asarray(self.cell_array).shape)
-        print(np.asarray([1, 2, 3]).shape)
-
-    def _get_cell_indexes_from_atom_coords(self, coords):
-        """Return the indexes ix, iy of the cell containing point coords."""
-
-        x, y = coords
-        x = x/self.factor
-        y = y/self.factor
-        return int(x / self.a), int(y / self.a)
-
-
-    def _get_atom_cell(self, atom):
-        """Return the cell containing atom."""
-
-        ix, iy = self._get_cell_indexes_from_atom_coords(atom.coords)
-        #print("ix, iy: ", ix, iy)
-        return self.cell_array[ix][iy]
-
-    def add_atom_to_cell(self, atom):
-        """Add atom to the appropriate cell."""
-
-        self._get_atom_cell(atom).append(atom)
-
-    def neighbouring_atoms_generator(self, coords):
-        """Return a generator yielding all atoms "near" point coords."""
-
-        ix, iy = self._get_cell_indexes_from_atom_coords(coords)
-        dxy = ((0,0), (1,0), (1,1), (0,1),
-               (-1,1), (-1,0), (-1,-1), (0,-1), (-1,1))
-        for dx, dy in dxy:
-            ixx, iyy = ix+dx, iy+dy
-            if not (0 <= ixx < self.n and 0 <= iyy < self.n):
-                continue
-            for atom in self.cell_array[ixx][iyy]:
-                yield atom
-
 
 class Crystal:
     """A simulation of a two-dimensional polycrystal."""
 
     def __init__(self, ngrains=5, seed_minimum_distance=0.2, lattice='hex',
-                 d=0.02, xsize=1000.0, ysize=1000.0):
+                 atom_diameter=0.02, xsize=1000.0, ysize=1000.0):
         """Initialise the polycrystal.
 
         ngrains is the number of grains, to be placed randomly on the unit
@@ -154,16 +46,33 @@ class Crystal:
 
         """
 
+        """
+            Lattice - arranjo do modelo (hexagonal ou quadrangular)
+            atom_diameter (d) eh o diametro de cada circulo que compoe o modelo 
+        """
+
+
         self.ngrains = ngrains
         self.seed_minimum_distance = seed_minimum_distance
         self.lattice = lattice
-        self.d = d
+        self.atom_diameter = atom_diameter
         self.atoms, self.grains = [], []
         self.xsize = xsize
         self.ysize = ysize
 
 
+        print("\n\nCrystal")
+        print("ngrains: ", ngrains)
+        print("seed_minimum_distance", seed_minimum_distance)
+        print("lattice: " , lattice)
+        print("diameter: " , atom_diameter)      
+        print("xsize: " , xsize)
+        print("ysize: " , ysize)
+        print()
+        print() 
 
+        
+        
     def seed_grains(self):
         """Place the ngrain seeds randomly, a minimum distance apart."""
 
@@ -171,7 +80,7 @@ class Crystal:
 
         # Reset the crystal.
         self.atoms, self.grains = [], []
-        self.sim_cells = SimCells(self.d, factor=self.xsize)
+        self.sim_cells = SimCells(self.atom_diameter, factor=self.xsize)
 
         for i in range(self.ngrains):
             while True:
@@ -242,17 +151,17 @@ class Crystal:
 
         """
         
-        print("\nget_neighbour_candidate_sites")
+#        print("\nget_neighbour_candidate_sites")
         
-        neighbour_sites = atom.coords + self.d * atom.grain.lattice_disp
+        neighbour_sites = atom.coords + self.atom_diameter * atom.grain.lattice_disp
         candidate_sites = []
         
         for site in neighbour_sites:
 
             if not (0 <= site[0] < self.xsize and 0 <= site[1] < self.ysize):
-                print("neighbour_site: ", site, " - RUIM")
+#                print("neighbour_site: ", site, " - RUIM")
                 continue
-            print("neighbour_site: ", site, " - OK")
+#            print("neighbour_site: ", site, " - OK")
             
             # neighbouring_atoms_generator spits out atoms in the
             # vicinity of site, using our array of "SimCells".
@@ -264,17 +173,18 @@ class Crystal:
 
             for other_atom in neighbouring_atoms_generator:         # TODO: 0.99 ?????
                 
-                print()
-                print(0.99)
-                # print(self.d * 0.99)
-                # print("zzz site: ", site)
+#                print()
+#                print(0.99)
+#                print(self.atom_diameter)
+#                print(self.atom_diameter * 0.99)
+#                print("zzz site: ", site)
                 # print("zzz coords: ", other_atom.coords)
-                # print("zzz distance: ", distance(site, other_atom.coords))
+#                print("zzz distance: ", distance(site, other_atom.coords))
                 # print("zzz seed_minimum_distance: ", self.seed_minimum_distance)               
                 
-                if 1==1:
-                #if distance(site, other_atom.coords) < self.d * 0.99:
-                    print("BREAKOUUUUUUUUUUUUUUUUUU")
+                #if 1==1:
+                if distance(site, other_atom.coords) < self.atom_diameter * 0.99:
+#                    print("BREAKOUUUUUUUUUUUUUUUUUU: ")
                     break
             else:
                 candidate_sites.append(site)
@@ -285,12 +195,12 @@ class Crystal:
         """Save the atom diameter and all atom locations to filename."""
 
         with open(filename, 'w') as fo:
-            print('d =', self.d, file=fo)
+            print('d =', self.atom_diameter, file=fo)
             for atom in self.atoms:
                 print(atom.coords[0], atom.coords[1], file=fo)
 
     def _get_patch_vertices(self, atom):
-        return atom.coords + self.d * atom.grain.patch_disp
+        return atom.coords + self.atom_diameter * atom.grain.patch_disp
 
 
     def plot_crystal(self, filename='crystal_007.png', circular_atoms=True,
@@ -308,8 +218,8 @@ class Crystal:
 
         if not colours:
             # Atoms are boring grey if no alternative is provided.
-            #colours = ['#444444']
-            colours = ['#000000']
+            colours = ['#444444']
+            #colours = ['#000000']
         ncolours = len(colours)
 
         if not kwargs:
@@ -335,11 +245,11 @@ class Crystal:
             if circular_atoms:
                 # center = atom.coords
                 #print(atom.coords)
-                #patches = [Circle(atom.coords, radius=self.d/2) for atom in atoms]
+                #patches = [Circle(atom.coords, radius=self.atom_diameter/2) for atom in atoms]
                 patches = []
                 for atom in atoms:
-                    print("atom.coords: ", atom.coords)
-                    patches.append(Circle(atom.coords, radius=self.d/2) )
+#                    print("atom.coords: ", atom.coords)
+                    patches.append(Circle(atom.coords, radius=self.atom_diameter/2) )
             else:
                 patches = [Polygon(self._get_patch_vertices(atom)) for atom in atoms]
                 
@@ -361,7 +271,7 @@ class Crystal:
 
 
         plt.savefig(filename)
-        #plt.show()
+        plt.show()
         
         #arr = plt.gcf().canvas.tostring_rgb()
 
@@ -369,23 +279,23 @@ class Crystal:
         
 
 # Lattice - arranjo
-# ngrains = ngrains=5, seed_minimum_distance=0.2, lattice='hex',               d=0.02
+# ngrains = ngrains=5, seed_minimum_distance=0.2, lattice='hex',              atom_diameter=0.02
 
 # crystal = Crystal(ngrains=1, 
-#                   seed_minimum_distance=0.01, 
-#                   #lattice='hex', 
-#                   lattice = 'square',
-#                   d=0.5,
-#                   xsize=1.0, 
-#                   ysize=1.0)
+#                    seed_minimum_distance=0.01, 
+#                    #lattice='hex', 
+#                    lattice = 'square',
+#                    atom_diameter=0.5,
+#                    xsize=1.0, 
+#                    ysize=1.0)
 
-# crystal = Crystal(ngrains=1, 
-#                   seed_minimum_distance=5.0, 
-#                   #lattice='hex', 
-#                   lattice = 'square',
-#                   d=50.0,
-#                   xsize=500.0, 
-#                   ysize=500.0)
+crystal = Crystal(ngrains=1, 
+                  seed_minimum_distance=10.0, 
+                  #lattice='hex', 
+                  lattice = 'square',
+                  atom_diameter=100.0,
+                  xsize=1000.0, 
+                  ysize=1000.0)
 
-# crystal.grow_crystal()
-# crystal.plot_crystal(linewidth=0, filename='crystal_008.png')
+crystal.grow_crystal()
+crystal.plot_crystal(linewidth=0, filename='crystal_008_4.png')

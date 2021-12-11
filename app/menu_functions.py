@@ -30,7 +30,7 @@ from . import interface
 from classes.uim import UIManager
 from classes.om import ObjectManager
 from solver.sg import staggeredGrid
-from solver.crystal import Crystal
+from solver.crystal.crystal import Crystal
 
 
 WAVELET_TYPES = OrderedDict()
