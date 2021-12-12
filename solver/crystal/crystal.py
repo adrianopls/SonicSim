@@ -98,11 +98,15 @@ class Crystal:
         self.sim_cells = SimCells(self.atom_diameter, self.xsize)
 
         if self.ngrains == 1:
+            
+            grain_origin_atom_coord = np.array([self.atom_diameter/2, self.atom_diameter/2])
+            
+            """
             grain_origin_atom_coord = np.random.random((2,))
             grain_origin_atom_coord[0] *= self.xsize
             grain_origin_atom_coord[1] *= self.ysize
+            """
             
-            print("VEIO PRA CÁ")
             # Initialise a grain and add its seed atom.
             grain = Grain(0, grain_origin_atom_coord, self.lattice)
             self.grains.append(grain)
@@ -343,11 +347,11 @@ class Crystal:
 
 crystal = Crystal(ngrains=1, 
                   seed_minimum_distance=10.0, 
-                  #lattice='hex', 
-                  lattice = 'square',
-                  atom_diameter=100.0,
+                  lattice='hex', 
+                  #lattice = 'square',
+                  atom_diameter=125.0,
                   xsize=1000.0, 
                   ysize=1000.0)
 
 crystal.grow_crystal()
-crystal.plot_crystal(linewidth=0, filename='crystal_012_square.png')
+crystal.plot_crystal(linewidth=0, filename='crystal_013_hex.png')

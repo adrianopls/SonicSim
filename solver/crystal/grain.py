@@ -50,7 +50,11 @@ class Grain:
         def _make_rot_matrix(alpha):
             return np.array([[np.cos(alpha), -np.sin(alpha)],
                              [np.sin(alpha), np.cos(alpha)]])
-        theta = np.random.rand() * self.phi
+        
+        
+        #theta = np.random.rand() * self.phi
+        theta = 0.0 # No rotation!
+        
         # Two-dimensional rotation matrix.
         self.rot = _make_rot_matrix(theta)
         self.lattice_disp = (self.rot @ self.lattice_disp).T
@@ -60,3 +64,11 @@ class Grain:
         else:
             a = 1 / np.sqrt(2)
         self.patch_disp = a * (patch_rot @ self.lattice_disp.T).T
+        
+        
+        
+        
+        
+        
+        
+        
