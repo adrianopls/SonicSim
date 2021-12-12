@@ -15,6 +15,6 @@ class Atom:
     """Cada grao eh um Atom. """
 
     def __init__(self, grain, coords):
-#        print("Atom: ", grain.grain_id , coords)
+        print("Atom: ", grain.grain_id , coords)
         self.grain = grain
         self.coords = coords

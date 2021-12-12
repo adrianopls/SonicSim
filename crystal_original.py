@@ -189,11 +189,12 @@ class Crystal:
         the site coordinates.
 
         """
-
+        print("\nget_neighbour_candidate_sites: ", atom.coords)
         neighbour_sites = atom.coords + self.d * atom.grain.lattice_disp
         candidate_sites = []
         for site in neighbour_sites:
             if not (0 <= site[0] < 1 and 0 <= site[1] < 1):
+                print("neighbour_site: ", site, " - RUIM")
                 continue
 
             # neighbouring_atoms_generator spits out atoms in the
@@ -265,8 +266,8 @@ class Crystal:
         plt.savefig(filename)
         plt.show()
 
-crystal = Crystal(ngrains=10, seed_minimum_distance=0.2, lattice='square',
-                 d=0.02)
+crystal = Crystal(ngrains=1, seed_minimum_distance=0.2, lattice='square',
+                 d=0.1)
 crystal.grow_crystal()
 crystal.save_atom_positions()
 colours = plt.get_cmap("tab10").colors
