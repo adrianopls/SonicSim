@@ -1,12 +1,5 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Dec 11 10:36:42 2021
-
-@author: Adriano
-"""
 
 import numpy as np
-
 
 
 class Grain:
@@ -18,13 +11,15 @@ class Grain:
 
     """
 
-    def __init__(self, grain_id, origin, lattice='hex'):
-        #print()
-        #print("Grain: ", grain_id, origin, lattice)
+    """ Grain na verdade se refere a facies do modelo sintetico."""
+    
+
+    def __init__(self, grain_id, origin, lattice='hex', theta=0.0):
         
         self.grain_id = grain_id
         self.origin = origin
         self.lattice = lattice
+        self.theta = theta
         
         # Initialize the displacements for other atoms around a reference atom,
         # and the maximum rotation angle, phi, to obtain all orientations.
@@ -44,6 +39,8 @@ class Grain:
         # Rotate the displacements by some random angle up to phi.
         self.setup_rotated_displacements()
 
+
+
     def setup_rotated_displacements(self):
         """Rotate atom displacements at random to change the orientation."""
 
@@ -53,10 +50,10 @@ class Grain:
         
         
         #theta = np.random.rand() * self.phi
-        theta = 0.0 # No rotation!
+        #theta = 0.0 # No rotation!
         
         # Two-dimensional rotation matrix.
-        self.rot = _make_rot_matrix(theta)
+        self.rot = _make_rot_matrix(self.theta * self.phi)
         self.lattice_disp = (self.rot @ self.lattice_disp).T
         patch_rot = _make_rot_matrix(self.phi/2)
         if self.lattice == 'hex':

@@ -44,21 +44,57 @@ def load():
     menubar_ctrl = UIM.create('menubar_controller', mwc.uid)
     
     
+    mc_image = UIM.create('menu_controller', menubar_ctrl.uid, label=u"&Image")         
+
+    UIM.create('menu_item_controller', mc_image.uid, 
+            label="&Create 1 layer image", 
+            #id=wx.ID_OPEN,
+            callback="app.menu_functions.on_create_1_layer_image"
+    )     
+
+    UIM.create('menu_item_controller', mc_image.uid, 
+            label="&Create 2 layers image", 
+            callback="app.menu_functions.on_create_2_layers_image"
+    )        
+
+    UIM.create('menu_item_controller', mc_image.uid, 
+            label="Load image", 
+            callback="app.menu_functions.on_load_image"
+    )  
+
+    UIM.create('menu_item_controller', mc_image.uid, 
+            label="Save image", 
+            callback="app.menu_functions.on_save_image"
+    )  
+    
+    UIM.create('menu_item_controller', mc_image.uid, 
+                    kind=wx.ITEM_SEPARATOR
+    )    
+    UIM.create('menu_item_controller', mc_image.uid, 
+            label=u'Exit', 
+            help=u'Exits application.',
+            id=wx.ID_EXIT#,
+            #callback='app.menu_functions.on_exit'
+    )      
+
+
 
     mc_model = UIM.create('menu_controller', menubar_ctrl.uid, 
                             label=u"&Model")            
-    UIM.create('menu_item_controller', mc_model.uid, 
-            label="&Load model", 
-            help="Load a model from file",
-            id=wx.ID_OPEN,
-            callback='app.menu_functions.on_load_model'
-    )        
     UIM.create('menu_item_controller', mc_model.uid, 
             label="&Create model", 
             help="Create a new model",
             #id=wx.ID_OPEN,
             callback="app.menu_functions.on_create_model"
-    )          
+    )       
+    
+    # UIM.create('menu_item_controller', mc_model.uid, 
+    #         label="&Load model", 
+    #         help="Load a model from file",
+    #         id=wx.ID_OPEN,
+    #         callback='app.menu_functions.on_load_model'
+    # )        
+       
     UIM.create('menu_item_controller', mc_model.uid, 
             label="&Save model", 
             help="Save a model into file",
@@ -66,15 +102,7 @@ def load():
             #id=wx.ID_OPEN,
             #callback='app.menu_functions.on_open'
     )         
-    UIM.create('menu_item_controller', mc_model.uid, 
-                    kind=wx.ITEM_SEPARATOR
-    )    
-    UIM.create('menu_item_controller', mc_model.uid, 
-            label=u'Exit', 
-            help=u'Exits application.',
-            id=wx.ID_EXIT#,
-            #callback='app.menu_functions.on_exit'
-    )           
+     
     
       
  

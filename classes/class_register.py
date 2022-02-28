@@ -5,6 +5,7 @@ from classes.om.manager import ObjectManager
 from .uim import UIManager
 #
 from .om.well import Well
+from .om.image import Image
 from .om.model_acoustic2d import Model2DAcoustic
 from .om.geo_layer import GeoLayer
 from .om.wavelet import Wavelet
@@ -36,6 +37,7 @@ from .uim import TrackLabelController, TrackLabel
 from .uim import \
         ObjectPropertiesDialogController, ObjectPropertiesDialog                  
 #
+from .uim import ImagePlotController, ImagePlot
 from .uim import ModelPlotController, ModelPlot
 from .uim import WaveletPlotController, WaveletPlot
 from .uim import SimulationPlotController, SimulationPlot
@@ -67,6 +69,8 @@ def register_OM_classes():
 #     ObjectManager.register_class(DataIndex, CurveSet)
 #     ObjectManager.register_class(Log, CurveSet)
 #     #
+
+    ObjectManager.register_class(Image)
     ObjectManager.register_class(Model2DAcoustic)
     ObjectManager.register_class(GeoLayer, Model2DAcoustic)
     ObjectManager.register_class(Wavelet)
@@ -167,6 +171,13 @@ def register_UIManager_classes():
     UIManager.register_class(CrossPlotController, CrossPlot, MainWindowController)
     UIManager.register_class(CrossPlotController, CrossPlot, FrameController)
     # 
+    
+    
+    UIManager.register_class(ImagePlotController, ImagePlot, FrameController)
+    UIManager.register_class(ImagePlotController, ImagePlot, MainWindowController)    
+    UIManager.register_class(CanvasPlotterController, CanvasPlotter, ImagePlotController)     
+    #
+    
     UIManager.register_class(ModelPlotController, ModelPlot, FrameController)
     UIManager.register_class(ModelPlotController, ModelPlot, MainWindowController)    
     UIManager.register_class(CanvasPlotterController, CanvasPlotter, ModelPlotController)     

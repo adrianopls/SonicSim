@@ -61,10 +61,10 @@ def staggeredGrid(model_uid, wavelet_uid, sim_steps, **kwargs):
 
 
 
-    
+    image = model._get_image()
 
-    vp_grid = np.where(model.data == geo_layer_1.value, geo_layer_1.vp, geo_layer_2.vp)
-    rho_grid = np.where(model.data == geo_layer_1.value, geo_layer_1.rho, geo_layer_2.rho)
+    vp_grid = np.where(image.data == geo_layer_1.value, geo_layer_1.vp, geo_layer_2.vp)
+    rho_grid = np.where(image.data == geo_layer_1.value, geo_layer_1.rho, geo_layer_2.rho)
 
 
     ## Preparation
@@ -82,7 +82,7 @@ def staggeredGrid(model_uid, wavelet_uid, sim_steps, **kwargs):
     lambda1 =  geo_layer_1.rho * geo_layer_1.vp * geo_layer_1.vp
     lambda2 = geo_layer_2.rho * geo_layer_2.vp* geo_layer_2.vp
     
-    lame_lambda = np.where(model.data == geo_layer_1.value, lambda1, lambda2)
+    lame_lambda = np.where(image.data == geo_layer_1.value, lambda1, lambda2)
     
     
     cmin = min(vp_grid.flatten())   # Lowest P-wave velocity

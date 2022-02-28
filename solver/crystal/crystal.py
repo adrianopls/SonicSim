@@ -4,6 +4,7 @@ https://scipython.com/blog/simulating-two-dimensional-polycrystals/
 
 """
 
+import io
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
@@ -12,14 +13,14 @@ from matplotlib.patches import Polygon
 import random
 
 
-# from .atom import Atom
-# from .grain import Grain
-# from .sim_cells import SimCells
+from .atom import Atom
+from .grain import Grain
+from .sim_cells import SimCells
 
 
-from atom import Atom
-from grain import Grain
-from sim_cells import SimCells
+# from atom import Atom
+# from grain import Grain
+# from sim_cells import SimCells
 
 
 DEFAULT_DPI=100.0
@@ -98,14 +99,14 @@ class Crystal:
         self.sim_cells = SimCells(self.atom_diameter, self.xsize)
 
         if self.ngrains == 1:
-            
+            """ Fixando a coordenada de origem do Atom seed. """
             grain_origin_atom_coord = np.array([self.atom_diameter/2, self.atom_diameter/2])
             
-            """
+            #"""
             grain_origin_atom_coord = np.random.random((2,))
             grain_origin_atom_coord[0] *= self.xsize
             grain_origin_atom_coord[1] *= self.ysize
-            """
+            #"""
             
             # Initialise a grain and add its seed atom.
             grain = Grain(0, grain_origin_atom_coord, self.lattice)
@@ -252,8 +253,9 @@ class Crystal:
         return atom.coords + self.atom_diameter * atom.grain.patch_disp
 
 
-    def plot_crystal(self, filename='crystal_007.png', circular_atoms=True,
-                     colours=None, **kwargs):
+    def plot_crystal(self, circular_atoms=True, colours=None, **kwargs):
+    # def plot_crystal(self, filename='crystal_007.png', circular_atoms=True,
+    #                  colours=None, **kwargs):
         """Create a Matplotlib image of the polycrystal as filename.
 
         If colours is None, use a single colour for all atoms; otherwise
@@ -275,10 +277,11 @@ class Crystal:
             kwargs = {'linewidth': 1, 'edgecolor': 'k'}
 
 
-        dpi = DEFAULT_DPI 
+        MULTIPLIER = 500
+        DPI = DEFAULT_DPI * MULTIPLIER 
 
-        fig, ax = plt.subplots(figsize=[self.xsize/dpi, self.ysize/dpi], 
-                                                                      dpi=dpi)
+        fig, ax = plt.subplots(figsize=[self.xsize/DPI, self.ysize/DPI], 
+                                                                      dpi=DPI)
 
         
 
@@ -319,13 +322,25 @@ class Crystal:
 
 
 
-        plt.savefig(filename)
-        plt.show()
+        # plt.savefig(filename)
+        # plt.show()
         
-        #arr = plt.gcf().canvas.tostring_rgb()
+        
+        # From: https://stackoverflow.com/questions/7821518/matplotlib-save-plot-to-numpy-array
+        io_buf = io.BytesIO()
+        fig.savefig(io_buf, format='raw', dpi=DPI)
+        io_buf.seek(0)
+        img_arr = np.reshape(np.frombuffer(io_buf.getvalue(), dtype=np.uint8),
+                     newshape=(int(fig.bbox.bounds[3]), int(fig.bbox.bounds[2]), -1))
+        
+        
+        
+        io_buf.close()
 
-        #print(arr)        
-        
+        return img_arr
+
+
+
 
 # Lattice - arranjo
 # ngrains = ngrains=5, seed_minimum_distance=0.2, lattice='hex',              atom_diameter=0.02
@@ -345,13 +360,19 @@ class Crystal:
 #                     xsize=1.0, 
 #                     ysize=1.0)
 
-crystal = Crystal(ngrains=1, 
-                  seed_minimum_distance=10.0, 
-                  lattice='hex', 
-                  #lattice = 'square',
-                  atom_diameter=125.0,
-                  xsize=1000.0, 
-                  ysize=1000.0)
+# number = 16
 
-crystal.grow_crystal()
-crystal.plot_crystal(linewidth=0, filename='crystal_013_hex.png')
+# #lattice = 'square'
+# lattice='hex'
+
+# crystal = Crystal(ngrains=1, 
+#                   lattice = lattice,
+#                   atom_diameter=0.00296,
+#                   xsize=256*0.000296, 
+#                   ysize=256*0.000296)
+
+# crystal.grow_crystal()
+# crystal.plot_crystal(linewidth=0, filename="crystal_" + str(number) + "_" + lattice + ".png")
+
+
+
