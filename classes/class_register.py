@@ -37,6 +37,7 @@ from .uim import TrackLabelController, TrackLabel
 from .uim import \
         ObjectPropertiesDialogController, ObjectPropertiesDialog                  
 #
+
 from .uim import ImagePlotController, ImagePlot
 from .uim import ModelPlotController, ModelPlot
 from .uim import WaveletPlotController, WaveletPlot
